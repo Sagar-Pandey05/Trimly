@@ -22,9 +22,16 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['client', 'barber']
+        enum: ["user", "barber", "admin"],
+        default: "user"
+    },
+    profilePic: {
+        type: String
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
     }
 });
 
-const User = mongoose.model('user', userSchema);
-module.exports = User;
+module.exports = mongoose.model("User", userSchema);
