@@ -9,7 +9,6 @@ const appointmentSchema = new mongoose.Schema({
         ref: 'User',
     },
     service: {
-        enum: ['haircut', 'shave', 'facial', 'massage'],
         type: String,
         required: true,
     },
