@@ -26,12 +26,13 @@ const userSchema = new mongoose.Schema({
         default: "user"
     },
     profilePic: {
-        type: String
+        type: String,
+        default: ""
     },
     createdAt: {
         type: Date,
         default: Date.now
-    }
+    },
 });
 
 module.exports = mongoose.model("User", userSchema);
