@@ -1,7 +1,8 @@
 const Appointment = require('../models/Appointment');
+const sendEmail = require('../utils/mailer');
 
 exports.bookAppointment = async (req, res) => {
-    try{
+    try {
         const { barberId, service, date, time, note } = req.body;
         const appointment = new Appointment({
             userId: req.user._id,
@@ -13,38 +14,49 @@ exports.bookAppointment = async (req, res) => {
         })
         await appointment.save();
         res.status(201).json({ message: 'Appointment booked successfully', appointment });
-    }catch (error) {
-        return res.status(500).json({ msg: "Error booking appointment", error: error.message  });
+        await sendEmail(
+            req.user.email,
+            "Appointment Booked ✔️",
+            `Your appointment with barber ID ${barberId} on ${date} at ${time} has been booked successfully.`
+        );
+    } catch (error) {
+        return res.status(500).json({ msg: "Error booking appointment", error: error.message });
     }
 }
 
 exports.updateAppointment = async (req, res) => {
-    try{
+    try {
         const { id } = req.params;
         const { status } = req.body;
 
-        if(!['accepted', 'rejected', 'rescheduled'].includes(status)){
+        if (!['accepted', 'rejected', 'rescheduled'].includes(status)) {
             return res.status(400).json({ message: 'Invalid status' });
         }
-        const appointment = await Appointment.findById(id);
-        if(!appointment){
+        const appointment = await Appointment.findById(id).populate("userId", "email name");
+        if (!appointment) {
             return res.status(404).json({ message: 'Appointment not found' });
         }
         appointment.status = status;
         await appointment.save();
         res.status(200).json({ message: `Appointment ${status} successfully`, appointment });
-    }catch (error) {
-        return res.status(500).json({ msg: "Unable to update status", error: error.message  });
+        await sendEmail(
+            appointment.userId.email, // you may need to populate userId
+            `Appointment ${status === "accepted" ? "Accepted" : "Rejected"} 🚀`,
+            `Your appointment on ${appointment.date} at ${appointment.time} has been ${status}.`
+        );
+
+    } catch (error) {
+        return res.status(500).json({ msg: "Unable to update status", error: error.message });
     }
 }
 
 exports.rescheduleAppointment = async (req, res) => {
-    try{
-        const {id} = req.params;
+    try {
+        const { id } = req.params;
         const { date, time, note } = req.body;
 
         const appointment = await Appointment.findById(id);
-        if(!appointment){
+        if (!appointment) {
             return res.status(404).json({ message: 'Appointment not found' });
         }
         appointment.date = date;
@@ -53,46 +65,45 @@ exports.rescheduleAppointment = async (req, res) => {
         await appointment.save();
 
         res.status(200).json({ message: 'Appointment rescheduled successfully', appointment });
-    }catch (error) {
+    } catch (error) {
         return res.status(500).json({ message: error.message });
     }
 }
 
 exports.getAllAppointments = async (req, res) => {
-    try{
+    try {
         const appointments = await Appointment.find().populate('userId barberId', 'name email');
         res.json(appointments);
-    }catch (error) {
-        return res.status(500).json({ msg: "Unable to fetch appointments", error: error.message  });
+    } catch (error) {
+        return res.status(500).json({ msg: "Unable to fetch appointments", error: error.message });
     }
 }
 
 exports.getUserAppointments = async (req, res) => {
     try {
-      const appointments = await Appointment.find({ userId: req.user._id }).populate("barberId", "name email");
-      res.json(appointments);
+        const appointments = await Appointment.find({ userId: req.user._id }).populate("barberId", "name email");
+        res.json(appointments);
     } catch (err) {
-      res.status(500).json({ msg: "Failed to fetch user appointments", error: err.message });
+        res.status(500).json({ msg: "Failed to fetch user appointments", error: err.message });
     }
-}; 
+};
 
 exports.cancelAppointment = async (req, res) => {
     try {
-      const { id } = req.params;
-  
-      const appointment = await Appointment.findById(id);
-  
-      if (!appointment) return res.status(404).json({ msg: "Appointment not found" });
-  
-      if (appointment.userId.toString() !== req.user._id.toString()){
-        return res.status(403).json({ msg: "Not authorized to cancel this appointment" });
-      }
-      await appointment.deleteOne();
-      res.json({ msg: "Appointment cancelled successfully" });
+        const { id } = req.params;
+
+        const appointment = await Appointment.findById(id);
+
+        if (!appointment) return res.status(404).json({ msg: "Appointment not found" });
+
+        if (appointment.userId.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ msg: "Not authorized to cancel this appointment" });
+        }
+        await appointment.deleteOne();
+        res.json({ msg: "Appointment cancelled successfully" });
     } catch (err) {
-      res.status(500).json({ msg: "Failed to cancel appointment", error: err.message });
+        res.status(500).json({ msg: "Failed to cancel appointment", error: err.message });
     }
 };
 
 
-  
