@@ -81,7 +81,7 @@ exports.getAllAppointments = async (req, res) => {
 
 exports.getUserAppointments = async (req, res) => {
     try {
-        const appointments = await Appointment.find({ userId: req.user._id }).populate("barberId", "name email");
+        const appointments = await Appointment.find({ userId: req.user._id }).populate("barberId", "name");
         res.json(appointments);
     } catch (err) {
         res.status(500).json({ msg: "Failed to fetch user appointments", error: err.message });

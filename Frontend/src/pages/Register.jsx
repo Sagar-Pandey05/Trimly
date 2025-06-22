@@ -3,7 +3,7 @@ import API from "../api/axios";
 import { Link, useNavigate } from "react-router-dom";
 
 const Register = () => {
-  const [formData, setFormData] = useState({ name: "", email: "", password: "", role: "user" });
+  const [formData, setFormData] = useState({ name: "", email: "", password: "", role: "user", address: "", mobile: "" });
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -26,7 +26,9 @@ const Register = () => {
         <h2 className="text-2xl mb-4">Register</h2>
         <input name="name" placeholder="Name" onChange={handleChange} className="p-2 border-1 border-gray-500 outline-none w-full" required /><br />
         <input name="email" placeholder="Email" onChange={handleChange} className="p-2 border-1 border-gray-500 outline-none w-full" required /><br />
-        <input name="password" type="password" placeholder="Password" onChange={handleChange} className="p-2 border-1 border-gray-500 outline-none w-full mb-3" required /><br />
+        <input name="password" type="password" placeholder="Password" onChange={handleChange} className="p-2 border-1 border-gray-500 outline-none w-full" required /><br />
+        <input name="mobile" type="text" placeholder="Mobile Number" onChange={handleChange} className="p-2 border-1 border-gray-500 outline-none w-full" required />
+        <textarea name="address" id="" onChange={handleChange} className="p-2 border-2 outline-none w-full mb-3" placeholder="Address..."></textarea>
         <select name="role" onChange={handleChange} className="p-2 border-[1px] border-black mb-2">
           <option value="user">User</option>
           <option value="barber">Barber</option>

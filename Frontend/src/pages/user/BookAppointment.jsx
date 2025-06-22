@@ -12,6 +12,7 @@ const BookAppointment = () => {
         time: "",
         service: ""
     });
+    const today = new Date().toISOString().split("T")[0];
 
     // Fetch barbers from API
     useEffect(() => {
@@ -32,18 +33,34 @@ const BookAppointment = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        const { barberId, date, time, service } = formData;
+        const token = localStorage.getItem("token");
+
         try {
-            const res = await API.post("/appointments", {
-                ...formData,
-                userId: user._id, // Optional if backend uses JWT to identify user
+            const res = await API.post("/appointment/book", {
+                barberId,
+                service,
+                date,
+                time
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
             });
 
             alert("Appointment request sent successfully!");
             setFormData({ barberId: "", date: "", time: "", service: "" });
         } catch (err) {
-            alert("Booking failed: " + err.response?.data?.message);
+            console.error("Booking error:", err);
+            const message =
+                err.response?.data?.message ||
+                err.message ||
+                "Something went wrong while booking.";
+            alert("Booking failed: " + message);
         }
     };
+
 
     return (
         <div className="flex min-h-screen bg-gray-100">
@@ -63,7 +80,7 @@ const BookAppointment = () => {
                             >
                                 <option value="">-- Choose Barber --</option>
                                 {barbers.map(barber => (
-                                    <option key={barber._id} value={barber._id}>{barber.name}</option>
+                                    <option key={barber._id} value={barber._id}>{barber.name} -- {barber.address}_{barber.mobile}</option>
                                 ))}
                             </select>
                         </div>
@@ -76,6 +93,7 @@ const BookAppointment = () => {
                                 name="date"
                                 value={formData.date}
                                 onChange={handleChange}
+                                min={today}
                                 className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                         </div>

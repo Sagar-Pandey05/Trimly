@@ -22,6 +22,7 @@ const Login = () => {
             else if (res.data.user.role === "barber") navigate("/barber");
             else if (res.data.user.role === "user") navigate("/user");
             else alert("User role not found in response.");
+            login(res.data.token, res.data.user);
         } catch (err) {
             console.log(err);
             alert(err.response?.data?.message || "Login failed");
